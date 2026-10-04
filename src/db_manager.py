@@ -1,10 +1,19 @@
-from http.client import responses
+import psycopg2
 
-import requests
 
-API = "https://opensky-network.org/api/states/all"
+
 
 class DBManager:
+
+    def __init__(self, dbname, user, password, host="localhost", port="5432"):
+        self.conn = psycopg2.connect(
+            dbname=dbname,
+            user=user,
+            password=password,
+            host=host,
+            port=port
+        )
+
     def get_all_aeroplanes(self):
         """получает список всех воздушных судов"""
         response = requests.get(API)
@@ -17,7 +26,6 @@ class DBManager:
         else:
             print(f"Произошла ошибка {response.status_code}")
             return []
-
 
     def get_countries_and_aeroplanes_count(self):
         """получает список всех стран и количество самолетов в их воздушных пространствах"""
@@ -92,7 +100,8 @@ class DBManager:
                 if speed is not None and speed > avg_speed:
                     aeroplanes_with_higher_speed.append(aircraft)
 
-            print(f"Найдено {len(aeroplanes_with_higher_speed)} самолетов со скоростью выше средней  {round(avg_speed, 2)}")
+            print(
+                f"Найдено {len(aeroplanes_with_higher_speed)} самолетов со скоростью выше средней  {round(avg_speed, 2)}")
             return aeroplanes_with_higher_speed
 
         else:
@@ -119,27 +128,3 @@ class DBManager:
         else:
             print(f"Произошла ошибка {response.status_code}")
             return []
-
-
-    def get_country_coordinates(self, country_name):
-        """получает название страны и возвращает ее координаты"""
-        API_nominatim = f"https://nominatim.openstreetmap.org/search?q={country_name}&format=json&limit=1"
-        headers = {
-            "User-Agent": 'SkyTracker-DB/1.0'
-        }
-
-        response = requests.get(API_nominatim, headers=headers)
-
-        if response.status_code == 200:
-            data = response.json()
-
-            if data:
-                lat = data[0].get('lat')
-                lon = data[0].get('lon')
-                return float(lat), float(lon)
-            if not data:
-                return None
-        else:
-            print(f"Произошла ошибка {response.status_code}")
-            return None
-
