@@ -73,8 +73,10 @@ def save_data_to_db(country_coordinate, filtered_aircrafts, conn):
     """записывает отфильтрованные самолеты и координаты стран в БД"""
     cur = conn.cursor()
     for country_name, coords in country_coordinate.items():
+        lat = coords[0]
+        lon = coords[1]
         cur.execute("""INSERT INTO countries (country_name, latitude, longitude)
-         VALUES (%s, %s, %s);""", (country_name, coords['lat'], coords['lon']))
+         VALUES (%s, %s, %s) ON CONFLICT(country_name) DO NOTHING;""", (country_name, lat, lon))
 
     for aircraft in filtered_aircrafts:
         icao24 = aircraft[0]
